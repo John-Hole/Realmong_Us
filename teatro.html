@@ -23,8 +23,10 @@
         </div>
     </div>
 
-    <!-- Intro Video -->
-    <video id="intro-video" class="hidden" src="video/intro.mp4"></video>
+    <!-- Role Assignment Overlay -->
+    <div id="role-assignment-overlay" class="overlay-screen hidden" style="z-index: 2000; background: var(--bg-dark); display: flex; align-items: center; justify-content: center;">
+        <h1 class="role-animation-text" style="color: var(--accent-red); font-size: clamp(2rem, 6vw, 5rem); letter-spacing: 5px; text-align: center; text-transform: uppercase;">ASSEGNAZIONE RUOLI...</h1>
+    </div>
 
     <!-- Waiting Screen -->
     <div id="waiting-screen" class="overlay-screen hidden">
@@ -58,24 +60,18 @@
     </div>
 
     <!-- Main Dashboard Interface -->
-    <div class="teatro-header hidden">
-        <span style="color: var(--accent-red)">DASHBOARD</span> // STANZA: <span id="header-room-code" style="color: white"></span>
-    </div>
-    <div class="teatro-layout hidden">
-        <!-- Left: Task Progress Bar -->
-        <div class="task-bar-container">
-            <h2 style="font-size: 1rem; text-align: center; margin-bottom: 0.5rem; color: var(--accent-cyan);">Task Globali</h2>
-            <div class="task-progress-wrap">
-                <div id="task-progress-fill" class="task-progress-fill"></div>
-            </div>
-            <p id="task-progress-text" style="text-align: center; margin-top: 0.5rem; font-weight: bold;">0 / 100%</p>
+    <div class="teatro-layout-grid hidden" id="main-dashboard-layout">
+        <!-- Header: Timer -->
+        <div class="teatro-header-grid" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; margin-bottom: 1rem;">
+            <div id="global-timer" style="font-size: 5rem; font-weight: bold; font-family: var(--font-ui); color: white;">10:00</div>
+            <div style="font-size: 1.2rem; color: #aaa;">DASHBOARD // STANZA: <span id="header-room-code" style="color: white"></span></div>
         </div>
 
         <!-- Center: Map or Text -->
-        <div class="map-container" id="map-container">
-            <img id="map-image" src="public/assets/mappa.jpg" alt="Mappa della navicella">
+        <div class="map-container" id="map-container" style="display: flex; flex-direction: column;">
+            <img id="map-image" src="public/assets/mappa.jpg" alt="Mappa della navicella" style="max-height: 60vh; width: 100%; object-fit: contain;">
             
-            <div id="text-map-container" class="hidden" style="width: 100%; height: 90vh; background: var(--card-bg); overflow-y: auto; padding: 1rem; border-radius: 12px; border: 4px solid var(--accent-cyan);">
+            <div id="text-map-container" class="hidden" style="width: 100%; height: 60vh; background: var(--card-bg); overflow-y: auto; padding: 1rem; border-radius: 12px; border: 4px solid var(--accent-cyan);">
                 <h2 style="color: var(--accent-cyan); text-align: center; margin-bottom: 1rem;">ELENCO TASK DISPONIBILI</h2>
                 <table id="text-tasks-table" style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
@@ -89,12 +85,21 @@
                     <tbody id="text-tasks-body"></tbody>
                 </table>
             </div>
+            
+            <!-- Footer: Task Progress Bar -->
+            <div class="task-bar-container" style="margin-top: auto; background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 2px solid #333;">
+                <h2 style="font-size: 1rem; text-align: center; margin-bottom: 0.5rem; color: var(--accent-cyan);">Task Globali</h2>
+                <div class="task-progress-wrap" style="width: 100%; height: 30px; background: #222; border-radius: 15px; overflow: hidden; position: relative;">
+                    <div id="task-progress-fill" class="task-progress-fill" style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.5s;"></div>
+                </div>
+                <p id="task-progress-text" style="text-align: center; margin-top: 0.5rem; font-weight: bold;">0%</p>
+            </div>
         </div>
 
         <!-- Right: Player List -->
-        <div class="players-sidebar">
-            <h2 style="font-size: 1rem; text-align: center; margin-bottom: 1rem; color: var(--accent-cyan);">Equipaggio</h2>
-            <div id="players-list-container">
+        <div class="players-sidebar" style="background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--accent-blue); overflow-y: auto; max-height: 80vh;">
+            <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 1rem; color: var(--accent-cyan);">Equipaggio</h2>
+            <div id="players-list-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
                 <!-- Populated by JS -->
             </div>
         </div>

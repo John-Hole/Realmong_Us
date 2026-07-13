@@ -33,7 +33,6 @@ function startConnection() {
     if(headerEl) headerEl.textContent = roomCode;
     
     // Elements
-const video = document.getElementById('intro-video');
 const overlayMeeting = document.getElementById('overlay-meeting');
 const overlayText = document.getElementById('overlay-text');
 const overlayEjected = document.getElementById('overlay-ejected');
@@ -233,36 +232,34 @@ onValue(roomRef, (snapshot) => {
             if (status === 'waiting') {
                 overlayMeeting.classList.add('hidden');
                 overlayEjected.classList.add('hidden');
-                if(video) video.classList.add('hidden');
                 
-                document.querySelector('.teatro-layout').classList.add('hidden');
-                document.querySelector('.teatro-header').classList.add('hidden');
-                document.getElementById('waiting-lobby').classList.remove('hidden');
+                const mainDashboard = document.getElementById('main-dashboard-layout');
+                if (mainDashboard) mainDashboard.classList.add('hidden');
+                
+                const waitingScreen = document.getElementById('waiting-screen');
+                if (waitingScreen) waitingScreen.classList.remove('hidden');
                 
                 clearInterval(timerInterval);
                 renderPlayers(players, votes, maxPlayers);
                 updateTaskBar(players);
             } 
-            else if (status === 'video_playing') {
-                overlayMeeting.classList.add('hidden');
-                overlayEjected.classList.add('hidden');
-                
-                document.getElementById('waiting-lobby').classList.add('hidden');
-                document.querySelector('.teatro-layout').classList.remove('hidden');
-                document.querySelector('.teatro-header').classList.remove('hidden');
-                
-                if(video && previousStatus !== 'video_playing') {
-                    video.classList.remove('hidden');
-                    video.volume = 1.0;
-                    video.currentTime = 0;
-                    video.play().catch(e => console.log("Autoplay blocked su teatro.", e));
-                }
-                
-                updateTimerUI(data.state.timer, data.state.timer_paused, data.state.timer_remaining);
-            }
             else if (status === 'playing') {
                 overlayMeeting.classList.add('hidden');
-                if(video) video.classList.add('hidden');
+                const waitingScreen = document.getElementById('waiting-screen');
+                if (waitingScreen) waitingScreen.classList.add('hidden');
+                
+                const mainDashboard = document.getElementById('main-dashboard-layout');
+                if (mainDashboard) mainDashboard.classList.remove('hidden');
+                
+                if (previousStatus === 'waiting') {
+                    const roleOverlay = document.getElementById('role-assignment-overlay');
+                    if (roleOverlay) {
+                        roleOverlay.classList.remove('hidden');
+                        setTimeout(() => {
+                            roleOverlay.classList.add('hidden');
+                        }, 5000);
+                    }
+                }
                 
                 if (previousStatus === 'voting' || previousStatus === 'discussion' || previousStatus === 'emergency') {
                     overlayEjected.classList.remove('hidden');
@@ -283,7 +280,6 @@ onValue(roomRef, (snapshot) => {
                 overlayMeeting.classList.remove('hidden');
                 overlayText.textContent = "RIUNIONE D'EMERGENZA";
                 overlayText.style.color = "var(--accent-red)";
-                if(video) video.classList.add('hidden');
                 clearInterval(timerInterval);
                 globalTimer.textContent = "EMERGENZA";
                 

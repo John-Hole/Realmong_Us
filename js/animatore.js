@@ -151,13 +151,6 @@ function updateUI(state, playersMap) {
         document.getElementById('waiting-player-name').textContent = myPlayerName;
         document.getElementById('waiting-room-code').textContent = `Stanza: ${roomCode}`;
     }
-    else if (state.game_status === 'video_playing') {
-        waitingScreen.classList.add('hidden');
-        crewmateUI.classList.add('hidden');
-        scientistUI.classList.add('hidden');
-        killSection.classList.add('hidden');
-        document.getElementById('report-section').classList.add('hidden');
-    }
     else if (state.game_status === 'playing') {
         waitingScreen.classList.add('hidden');
         document.getElementById('report-section').classList.remove('hidden');

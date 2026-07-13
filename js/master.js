@@ -405,28 +405,9 @@ btnStartRandom.addEventListener('click', async () => {
     updates['state/last_ejected'] = null;
     updates['votes'] = null;
     
-    if (isVideoEnabled) {
-        updates['state/game_status'] = 'video_playing';
-        updates['state/timer_paused'] = true;
-        updates['state/timer_remaining'] = roundDuration;
-        
-        // Schedule auto-transition
-        setTimeout(async () => {
-            // Re-fetch to ensure we don't overwrite if manually stopped
-            const snap = await get(ref(db, `rooms/${roomCode}/state/game_status`));
-            if (snap.val() === 'video_playing') {
-                await update(roomRef, {
-                    'state/game_status': 'playing',
-                    'state/timer_paused': false,
-                    'state/timer': Date.now() + roundDuration
-                });
-            }
-        }, 12000); // Intro is 12-15s, wait 12s
-    } else {
-        updates['state/game_status'] = 'playing';
-        updates['state/timer_paused'] = false;
-        updates['state/timer'] = Date.now() + roundDuration;
-    }
+    updates['state/game_status'] = 'playing';
+    updates['state/timer_paused'] = false;
+    updates['state/timer'] = Date.now() + roundDuration;
 
     // Add player updates to the same atomic payload
     for (const name in playersMap) {
