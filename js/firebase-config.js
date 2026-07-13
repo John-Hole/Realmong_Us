@@ -3,7 +3,7 @@ import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.3/firebase
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDP523x9SZZ6MVkvl3tVbuv5S8pbzVsxr4",
+  apiKey: "AIzaSyDP523x9SZZ6MVkvl3tVbuv5SBpbzVsxr4",
   authDomain: "grest-among-us.firebaseapp.com",
   databaseURL: "https://grest-among-us-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "grest-among-us",
