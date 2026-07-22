@@ -63,6 +63,7 @@ let killInterval = null;
 let currentRoundTracker = 0;
 let currentVotes = {};
 let previousStatus = null;
+let isAutoRejoining = false;
 
 btnHideRole.addEventListener('click', () => {
     roleScreen.classList.add('hidden');
@@ -96,6 +97,7 @@ onValue(roomRef, (snapshot) => {
         if (data.players && data.players[myPlayerName]) {
             myData = data.players[myPlayerName];
             if (notInRoomScreen) notInRoomScreen.classList.add('hidden');
+            if (playerNameDisplay) playerNameDisplay.textContent = myPlayerName;
             updateUI(currentState, data.players);
         } else {
             myData = null;
@@ -146,6 +148,14 @@ onValue(roomRef, (snapshot) => {
                     }
                 }
             }
+
+            // Auto-rejoin if waiting status and not kicked
+            if (!isKicked && currentState && currentState.game_status === 'waiting' && !isAutoRejoining) {
+                isAutoRejoining = true;
+                rejoinRoom().finally(() => {
+                    setTimeout(() => { isAutoRejoining = false; }, 2000);
+                });
+            }
         }
         
         previousStatus = currentState.game_status;
@@ -154,6 +164,8 @@ onValue(roomRef, (snapshot) => {
 
 function updateUI(state, playersMap) {
     if (!myData) return;
+
+    if (playerNameDisplay) playerNameDisplay.textContent = myPlayerName;
 
     if (myData.status === 'killed_hidden' || myData.status === 'killed_revealed') {
         overlayDead.classList.remove('hidden');
@@ -567,33 +579,29 @@ async function rejoinRoom() {
 
         const playersMap = roomData.players || {};
 
-        // Duplicate name check across active players
-        const isDuplicate = Object.keys(playersMap).some(
-            p => p.toLowerCase() === myPlayerName.toLowerCase()
-        );
-
-        if (isDuplicate) {
-            alert(`Il nome "${myPlayerName}" è già utilizzato da un altro giocatore in questa stanza. Per favore cambia nome.`);
-            await promptChangeName();
-            return;
-        }
-
-        // Re-add player node
+        // Re-add player node if not present
         const newPlayerRef = ref(db, `rooms/${roomCode}/players/${myPlayerName}`);
         const newVoteRef = ref(db, `rooms/${roomCode}/votes/${myPlayerName}`);
 
-        await set(newPlayerRef, {
-            status: 'alive',
-            role: 'crewmate',
-            meetings_called: 0
-        });
+        if (!playersMap[myPlayerName]) {
+            await set(newPlayerRef, {
+                status: 'alive',
+                role: 'crewmate',
+                meetings_called: 0
+            });
+        }
+
+        try { onDisconnect(newPlayerRef).cancel(); } catch(e){}
+        try { onDisconnect(newVoteRef).cancel(); } catch(e){}
 
         // Setup onDisconnect
         onDisconnect(newPlayerRef).remove();
         onDisconnect(newVoteRef).remove();
 
+        if (playerNameDisplay) playerNameDisplay.textContent = myPlayerName;
+
     } catch (err) {
-        alert("Errore durante il rientro in stanza: " + err.message);
+        console.error("Errore durante il rientro in stanza: ", err);
     }
 }
 
