@@ -55,7 +55,7 @@
     <!-- Meeting Overlay -->
     <div id="overlay-meeting" class="overlay-screen hidden">
         <h1 class="alert-text">RIUNIONE CHIAMATA</h1>
-        <p style="margin-top: 2rem; font-size: 1.5rem;">Segui la dashboard e attendi disposizioni.</p>
+        <p style="margin-top: 2rem; font-size: 1.5rem;">Segui la schermata generale e attendi disposizioni.</p>
     </div>
 
     <!-- Login screen removed. Handled by index.html -->
@@ -109,7 +109,7 @@
             </div>
         </div>
 
-        <div id="report-section" style="margin-top: 2rem; text-align: center;">
+        <div id="report-section" class="hidden" style="margin-top: 2rem; text-align: center;">
             <p id="meetings-left-text" style="color: #aaa; margin-bottom: 0.5rem; font-size: clamp(0.8rem, 3vw, 0.9rem);">Riunioni rimanenti: -</p>
             <button id="btn-report" class="btn btn-call-meeting">SEGNALA / RIUNIONE</button>
         </div>
@@ -123,6 +123,17 @@
             </div>
             
             <p style="text-align: center; color: #777; margin-top: 1rem; font-size: 0.9rem;">In attesa dell'avvio della partita...</p>
+        </div>
+
+        <div id="not-in-room-screen" class="hidden" style="display: flex; flex-direction: column; gap: 1rem; padding-top: 2rem; text-align: center;">
+            <div style="background: var(--card-bg); border: 2px solid var(--accent-red); border-radius: 12px; padding: 1.5rem;">
+                <h2 style="color: var(--accent-red); margin-bottom: 0.8rem; font-size: clamp(1.2rem, 5vw, 1.6rem);">NON NELLA STANZA</h2>
+                <p style="color: #ccc; margin-bottom: 1.5rem; font-size: 0.95rem;">Sei stato disconnesso o non sei registrato nella stanza.</p>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; align-items: center;">
+                    <button id="btn-rejoin-room" class="btn" style="width: 100%; max-width: 280px; padding: 0.8rem; font-size: 1.1rem; background: var(--accent-green); color: black; font-weight: bold;">RIENTRA / ENTRA IN STANZA</button>
+                    <button id="btn-not-in-room-change-name" class="btn" style="width: 100%; max-width: 280px; padding: 0.6rem; font-size: 0.95rem;">Cambia Nome</button>
+                </div>
+            </div>
         </div>
     </div>
 

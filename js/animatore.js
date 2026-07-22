@@ -40,6 +40,10 @@ const votingUI = document.getElementById('voting-ui');
 const votingOptions = document.getElementById('voting-options');
 const votingStatus = document.getElementById('voting-status');
 
+const notInRoomScreen = document.getElementById('not-in-room-screen');
+const btnRejoinRoom = document.getElementById('btn-rejoin-room');
+const btnNotInRoomChangeName = document.getElementById('btn-not-in-room-change-name');
+
 // Initialization
 gameScreen.classList.remove('hidden');
 playerNameDisplay.textContent = myPlayerName;
@@ -81,9 +85,26 @@ onValue(roomRef, (snapshot) => {
 
         if (data.players && data.players[myPlayerName]) {
             myData = data.players[myPlayerName];
+            if (notInRoomScreen) notInRoomScreen.classList.add('hidden');
             updateUI(currentState, data.players);
         } else {
+            myData = null;
             statusBadge.textContent = "NON NELLA STANZA";
+            statusBadge.style.background = "var(--accent-red)";
+
+            // Hide all game UIs
+            crewmateUI.classList.add('hidden');
+            scientistUI.classList.add('hidden');
+            killSection.classList.add('hidden');
+            document.getElementById('report-section').classList.add('hidden');
+            waitingScreen.classList.add('hidden');
+            votingUI.classList.add('hidden');
+            roleScreen.classList.add('hidden');
+            overlayMeeting.classList.add('hidden');
+            overlayDead.classList.add('hidden');
+
+            // Show Not-In-Room UI
+            if (notInRoomScreen) notInRoomScreen.classList.remove('hidden');
         }
         
         previousStatus = currentState.game_status;
@@ -459,41 +480,118 @@ btnReport.addEventListener('click', async () => {
     }
 });
 
-document.getElementById('btn-change-name').addEventListener('click', async () => {
-    if(currentState && currentState.game_status !== 'waiting') {
+async function rejoinRoom() {
+    if (!roomCode || !myPlayerName) return;
+    try {
+        const snapshot = await get(ref(db, `rooms/${roomCode}`));
+        if (!snapshot.exists()) {
+            alert("La stanza non esiste più.");
+            window.location.href = "index.html";
+            return;
+        }
+
+        const roomData = snapshot.val();
+        const playersMap = roomData.players || {};
+
+        // Duplicate name check across active players
+        const isDuplicate = Object.keys(playersMap).some(
+            p => p.toLowerCase() === myPlayerName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            alert(`Il nome "${myPlayerName}" è già utilizzato da un altro giocatore in questa stanza. Per favore cambia nome.`);
+            await promptChangeName();
+            return;
+        }
+
+        // Re-add player node
+        const newPlayerRef = ref(db, `rooms/${roomCode}/players/${myPlayerName}`);
+        const newVoteRef = ref(db, `rooms/${roomCode}/votes/${myPlayerName}`);
+
+        await set(newPlayerRef, {
+            status: 'alive',
+            role: 'crewmate',
+            meetings_called: 0
+        });
+
+        // Setup onDisconnect
+        onDisconnect(newPlayerRef).remove();
+        onDisconnect(newVoteRef).remove();
+
+    } catch (err) {
+        alert("Errore durante il rientro in stanza: " + err.message);
+    }
+}
+
+async function promptChangeName() {
+    if (myData && currentState && currentState.game_status !== 'waiting') {
         alert("Non puoi cambiare nome a partita in corso.");
         return;
     }
-    const newName = prompt("Inserisci il tuo nuovo nome:");
-    if(!newName || newName.trim() === "" || newName.trim() === myPlayerName) return;
-    
+
+    const newName = prompt("Inserisci il tuo nuovo nome:", myPlayerName || "");
+    if (!newName || newName.trim() === "") return;
+
     const cleanName = newName.trim();
-    
-    // Check if name is taken
-    const snapshot = await get(ref(db, `rooms/${roomCode}/players/${cleanName}`));
-    if(snapshot.exists()) {
-        alert("Questo nome è già in uso!");
-        return;
+    if (cleanName.toLowerCase() === (myPlayerName || "").toLowerCase() && myData) return;
+
+    try {
+        const playerSnap = await get(ref(db, `rooms/${roomCode}/players`));
+        if (playerSnap.exists()) {
+            const existingPlayers = playerSnap.val();
+            const isTaken = Object.keys(existingPlayers).some(
+                p => p.toLowerCase() === cleanName.toLowerCase() && p.toLowerCase() !== (myPlayerName || "").toLowerCase()
+            );
+            if (isTaken) {
+                alert(`Il nome "${cleanName}" è già in uso in questa stanza! Per favore scegli un nome diverso.`);
+                return;
+            }
+        }
+
+        if (myData) {
+            const oldNameRef = ref(db, `rooms/${roomCode}/players/${myPlayerName}`);
+            const newNameRef = ref(db, `rooms/${roomCode}/players/${cleanName}`);
+            const oldVoteRef = ref(db, `rooms/${roomCode}/votes/${myPlayerName}`);
+            const newVoteRef = ref(db, `rooms/${roomCode}/votes/${cleanName}`);
+
+            const playerData = await get(oldNameRef);
+            if (playerData.exists()) {
+                await set(newNameRef, playerData.val());
+                await remove(oldNameRef);
+            } else {
+                await set(newNameRef, { status: 'alive', role: 'crewmate', meetings_called: 0 });
+            }
+
+            try { onDisconnect(oldNameRef).cancel(); } catch(e){}
+            try { onDisconnect(oldVoteRef).cancel(); } catch(e){}
+
+            onDisconnect(newNameRef).remove();
+            onDisconnect(newVoteRef).remove();
+        }
+
+        myPlayerName = cleanName;
+        playerNameDisplay.textContent = cleanName;
+        localStorage.setItem('lastNickname', cleanName);
+
+        const url = new URL(window.location);
+        url.searchParams.set('player', cleanName);
+        window.history.replaceState({}, '', url);
+
+        if (!myData) {
+            await rejoinRoom();
+        }
+    } catch (e) {
+        alert("Errore durante il cambio nome: " + e.message);
     }
-    
-    // Update Firebase
-    const oldNameRef = ref(db, `rooms/${roomCode}/players/${myPlayerName}`);
-    const newNameRef = ref(db, `rooms/${roomCode}/players/${cleanName}`);
-    
-    const playerData = await get(oldNameRef);
-    if(playerData.exists()) {
-        await set(newNameRef, playerData.val());
-        await remove(oldNameRef);
-    } else {
-        await set(newNameRef, { status: 'alive', role: 'crewmate', meetings_called: 0 });
-    }
-    
-    // Update local variables
-    myPlayerName = cleanName;
-    localStorage.setItem('lastNickname', cleanName);
-    
-    // Update URL without reloading
-    const url = new URL(window.location);
-    url.searchParams.set('player', cleanName);
-    window.history.replaceState({}, '', url);
-});
+}
+
+if (btnRejoinRoom) {
+    btnRejoinRoom.addEventListener('click', rejoinRoom);
+}
+if (btnNotInRoomChangeName) {
+    btnNotInRoomChangeName.addEventListener('click', promptChangeName);
+}
+const btnChangeName = document.getElementById('btn-change-name');
+if (btnChangeName) {
+    btnChangeName.addEventListener('click', promptChangeName);
+}

@@ -42,7 +42,7 @@ if (btnProjector) {
 btnStart.classList.add('hidden'); // Hide fixed roles button since we don't have hardcoded players
 btnStartRandom.textContent = "Avvia Partita";
 
-document.querySelector('h1').textContent = `DASHBOARD MASTER - [${roomCode}]`;
+document.querySelector('h1').textContent = `PANNELLO MASTER - [${roomCode}]`;
 
 let currentState = {};
 let roomConfig = {};

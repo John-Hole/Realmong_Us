@@ -569,6 +569,15 @@ btnJoinRoom.addEventListener('click', async () => {
         if (roomData.state && roomData.state.game_status !== 'waiting') {
             return alert("Impossibile accedere: partita già in corso!");
         }
+
+        if (roomData.players) {
+            const isDuplicate = Object.keys(roomData.players).some(
+                p => p.toLowerCase() === name.toLowerCase()
+            );
+            if (isDuplicate) {
+                return alert(`Il nome "${name}" è già in uso in questa stanza! Per favore scegli un altro nome.`);
+            }
+        }
         
         const currentPlayersCount = roomData.players ? Object.keys(roomData.players).length : 0;
         const maxLimit = roomData.config.maxPlayers;

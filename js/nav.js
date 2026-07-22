@@ -21,7 +21,7 @@
         </div>
         <div id="side-nav" class="side-nav">
             <a href="#" id="nav-home">Homepage</a>
-            <a href="#" id="nav-teatro">Dashboard</a>
+            <a href="#" id="nav-teatro">Schermata generale</a>
             <a href="#" id="nav-account">Account (Template)</a>
             <div style="flex-grow: 1;"></div>
             <div id="nav-auth-status" style="font-size: 0.8rem; color: #ccc; margin-bottom: 10px;">Non loggato</div>

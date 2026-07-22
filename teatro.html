@@ -16,10 +16,10 @@
 
     <div id="join-overlay" class="overlay-screen" style="padding: 2rem;">
         <div class="section-container" style="background: var(--card-bg); border-radius: 20px; padding: 2rem; border: 2px solid var(--accent-cyan); max-width: 400px; width: 100%; text-align: center;">
-            <h1 style="margin-bottom: 1rem; color: var(--accent-cyan); font-family: var(--font-ui); font-size: 2rem;">Dashboard</h1>
+            <h1 style="margin-bottom: 1rem; color: var(--accent-cyan); font-family: var(--font-ui); font-size: 2rem;">Schermata Generale</h1>
             <p style="font-size: 1rem; margin-bottom: 2rem; color: #ccc; font-family: var(--font-ui);">Inserisci il codice stanza per avviare il maxischermo:</p>
             <input type="text" id="join-room-input" style="width: 100%; padding: 1rem; border-radius: 10px; background: #2a3644; color: white; border: none; box-sizing: border-box; font-family: var(--font-ui); text-transform: uppercase; margin-bottom: 1.5rem; text-align: center; font-size: 1.5rem;" placeholder="CODICE" maxlength="5">
-            <button id="btn-join-room" class="btn" style="width: 100%; font-family: var(--font-ui);">Connetti Dashboard</button>
+            <button id="btn-join-room" class="btn" style="width: 100%; font-family: var(--font-ui);">Connetti Schermata Generale</button>
         </div>
     </div>
 
@@ -45,62 +45,107 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Interface -->
-    <div class="teatro-layout-grid hidden" id="main-dashboard-layout">
-        <!-- Header: Timer -->
-        <div class="teatro-header-grid" style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; margin-bottom: 1rem;">
-            <div id="global-timer" style="font-size: 5rem; font-weight: bold; font-family: var(--font-ui); color: white;">10:00</div>
-            <div style="font-size: 1.2rem; color: #aaa;">DASHBOARD // STANZA: <span id="header-room-code" style="color: white"></span></div>
-        </div>
-
-        <!-- Center: Map or Text -->
-        <div class="map-container" id="map-container" style="display: flex; flex-direction: column;">
-            <img id="map-image" src="public/assets/mappa.jpg" alt="Mappa della navicella" style="max-height: 60vh; width: 100%; object-fit: contain;">
-            
-            <div id="text-map-container" class="hidden" style="width: 100%; height: 60vh; background: var(--card-bg); overflow-y: auto; padding: 1rem; border-radius: 12px; border: 4px solid var(--accent-cyan);">
-                <h2 style="color: var(--accent-cyan); text-align: center; margin-bottom: 1rem;">ELENCO TASK DISPONIBILI</h2>
-                <table id="text-tasks-table" style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="border-bottom: 2px solid var(--accent-cyan);">
-                            <th style="padding: 0.5rem;">N°</th>
-                            <th style="padding: 0.5rem;">Task</th>
-                            <th style="padding: 0.5rem;">Obiettivo</th>
-                            <th style="padding: 0.5rem;">Luogo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="text-tasks-body"></tbody>
-                </table>
-            </div>
-            
-            <!-- Footer: Task Progress Bar -->
-            <div id="taskbar-container" class="task-bar-container" style="margin-top: auto; background: var(--card-bg); padding: 1rem; border-radius: 12px; border: 2px solid #333;">
-                <h2 style="font-size: 1rem; text-align: center; margin-bottom: 0.5rem; color: var(--accent-cyan);">Task Globali</h2>
-                <div class="task-progress-wrap" style="width: 100%; height: 30px; background: #222; border-radius: 15px; overflow: hidden; position: relative;">
-                    <div id="task-progress-fill" class="task-progress-fill" style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.5s;"></div>
+    <!-- Main Dashboard Interface (Teatro Grid) -->
+    <div class="teatro-lobby-container hidden" id="main-dashboard-layout">
+        
+        <!-- LEFT COLUMN: QR Code & Task List -->
+        <div class="teatro-left-col">
+            <!-- QR Code Section -->
+            <div id="qr-code-container" class="teatro-card qr-card">
+                <div class="qr-info-header">UNISCITI ALLA STANZA</div>
+                <div id="qrcode" class="qrcode-wrapper"></div>
+                <div class="qr-room-badge">
+                    <span class="qr-label">STANZA:</span>
+                    <span id="waiting-room-code" class="qr-code-text">---</span>
                 </div>
-                <p id="task-progress-text" style="text-align: center; margin-top: 0.5rem; font-weight: bold;">0%</p>
+                <p class="qr-subtext">Inquadra il QR per giocare!</p>
+            </div>
+
+            <!-- Task List Box (Left) -->
+            <div id="left-tasks-container" class="teatro-card left-tasks-card">
+                <div class="teatro-card-header">
+                    <span class="header-icon">📋</span>
+                    <h2>TASK IN GIOCO</h2>
+                </div>
+                <div id="left-tasks-scroll" class="auto-scroll-box">
+                    <ul id="left-tasks-list" class="teatro-tasks-ul">
+                        <!-- Populated by JS -->
+                    </ul>
+                </div>
             </div>
         </div>
 
-        <!-- Right: Player List -->
-        <div class="players-sidebar" style="background: var(--card-bg); padding: 1.5rem; border-radius: 12px; border: 2px solid var(--accent-blue); overflow-y: auto; max-height: 80vh; display: flex; flex-direction: column;">
-            <div style="flex-grow: 1; overflow-y: auto; margin-bottom: 1rem;">
-                <h2 style="font-size: 1.5rem; text-align: center; margin-bottom: 1rem; color: var(--accent-cyan);">Equipaggio <span id="waiting-players-count" style="font-size: 1rem; color: #888;"></span></h2>
-                <div id="players-list-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-start; align-content: flex-start;">
-                    <!-- Populated by JS -->
+        <!-- CENTER COLUMN: Room Code & Map or Center Tasks -->
+        <div class="teatro-center-col">
+            <!-- Room Code / Timer Header -->
+            <div class="teatro-card center-header-card">
+                <div id="global-timer" class="game-timer hidden">10:00</div>
+                <div class="room-code-display">
+                    <span class="code-title">CODICE STANZA</span>
+                    <span id="header-room-code" class="code-val">---</span>
                 </div>
             </div>
 
-            <!-- QR Code Section (Visible in Waiting) -->
-            <div id="qr-code-container" style="background: white; padding: 1.5rem; border-radius: 12px; border: 4px solid var(--accent-cyan); text-align: center; flex-shrink: 0;">
-                <div id="qrcode" style="display: inline-block;"></div>
-                <h2 style="color: black; margin-top: 10px; font-size: 1.5rem;">STANZA: <span id="waiting-room-code" style="color: var(--accent-red);">---</span></h2>
-                <p style="color: #666; font-family: var(--font-ui); font-weight: bold; margin-top: 5px; font-size: 0.9rem;">Inquadra per unirti!</p>
+            <!-- Center Main Area: Map or Tasks Table -->
+            <div class="teatro-card center-main-card">
+                <!-- Map View -->
+                <div id="map-view-wrapper" class="map-view-wrapper">
+                    <img id="map-image" src="public/assets/mappa.jpg" alt="Mappa della navicella" class="map-img">
+                </div>
+
+                <!-- Full Center Tasks View (Shown when map is missing / not loaded) -->
+                <div id="text-map-container" class="center-tasks-wrapper hidden">
+                    <div class="teatro-card-header">
+                        <span class="header-icon">📝</span>
+                        <h2>ELENCO TASK DISPONIBILI</h2>
+                    </div>
+                    <div id="center-tasks-scroll" class="auto-scroll-box">
+                        <table id="text-tasks-table" class="center-tasks-table">
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Task</th>
+                                    <th>Obiettivo</th>
+                                    <th>Luogo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="text-tasks-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer: Task Progress Bar (Shown during game) -->
+            <div id="taskbar-container" class="teatro-card taskbar-card hidden">
+                <div class="taskbar-info">
+                    <span class="taskbar-title">PROGRESSO TASK GLOBALI</span>
+                    <span id="task-progress-text" class="taskbar-pct">0%</span>
+                </div>
+                <div class="task-progress-wrap">
+                    <div id="task-progress-fill" class="task-progress-fill"></div>
+                </div>
             </div>
         </div>
+
+        <!-- RIGHT COLUMN: Players List -->
+        <div class="teatro-right-col">
+            <div class="teatro-card players-card">
+                <div class="teatro-card-header">
+                    <span class="header-icon">👥</span>
+                    <h2>GIOCATORI <span id="waiting-players-count" class="players-limit-badge"></span></h2>
+                </div>
+                <div id="players-scroll-container" class="auto-scroll-box">
+                    <div id="players-list-container" class="players-grid-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Script as module to use import -->
     <script type="module" src="js/teatro.js"></script>
-<script src="js/nav.js"></script></body>
+    <script src="js/nav.js"></script>
+</body>
 </html>
