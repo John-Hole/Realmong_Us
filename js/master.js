@@ -553,15 +553,6 @@ function updateUI(state, players) {
         }
     }
 
-    // Show/hide "Gestisci Tempo" button in Azioni Rapide
-    if (btnOpenTimerModal) {
-        if (state.game_status !== 'waiting' && state.game_status !== 'video_playing') {
-            btnOpenTimerModal.classList.remove('hidden');
-        } else {
-            btnOpenTimerModal.classList.add('hidden');
-        }
-    }
-
     // Reset buttons state
     btnStartRandom.disabled = false;
     btnCallMeeting.disabled = true;

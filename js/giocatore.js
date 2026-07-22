@@ -241,8 +241,15 @@ function updateUI(state, playersMap) {
 
         const maxMeetings = roomConfig.maxMeetings || 1;
         const meetingsCalled = myData.meetings_called || 0;
-        const meetingsLeft = maxMeetings - meetingsCalled;
-        meetingsLeftText.textContent = `(${meetingsLeft}/${maxMeetings})`;
+        const meetingsLeft = Math.max(0, maxMeetings - meetingsCalled);
+
+        if (meetingsLeft > 0) {
+            meetingsLeftText.textContent = `(${meetingsLeft}/${maxMeetings})`;
+            meetingsLeftText.style.color = '#94a3b8';
+        } else {
+            meetingsLeftText.textContent = 'ESAURITE';
+            meetingsLeftText.style.color = '#ef4444';
+        }
 
         if (meetingsLeft > 0 && myData.status === 'alive') {
             btnReport.disabled = false;
@@ -374,21 +381,32 @@ function renderRealTasks(tasksObj) {
         li.className = `giocatore-task-item ${isDone ? 'completed' : ''}`;
         
         li.innerHTML = `
-            <span class="task-num">#${idx}</span>
+            <div class="giocatore-task-header">
+                <span class="task-num">#${idx}</span>
+                <span class="task-status-pill ${isDone ? 'done' : 'pending'}">${isDone ? '✔ COMPLETATO' : 'IN CORSO'}</span>
+            </div>
             <div class="task-info">
                 <div class="task-title">${taskData.desc}</div>
             </div>
             <button class="task-btn ${isDone ? 'btn-done' : ''}" ${isDone ? 'disabled' : ''} id="task-btn-${taskId}">
-                ${isDone ? '✔ FATTO' : 'SPUNTA'}
+                ${isDone ? '✔ COMPLETATA' : 'SPUNTA TASK'}
             </button>
         `;
         
         if (!isDone) {
             const btn = li.querySelector(`#task-btn-${taskId}`);
             btn.onclick = async (e) => {
-                e.target.disabled = true;
-                e.target.classList.add('btn-done');
-                e.target.textContent = '✔ FATTO';
+                const targetBtn = e.currentTarget;
+                targetBtn.disabled = true;
+                targetBtn.classList.add('btn-done');
+                targetBtn.textContent = '✔ COMPLETATA';
+                const pill = li.querySelector('.task-status-pill');
+                if (pill) {
+                    pill.classList.remove('pending');
+                    pill.classList.add('done');
+                    pill.textContent = '✔ COMPLETATO';
+                }
+                li.classList.add('completed');
                 await completeTask(taskId);
             };
         }
@@ -407,18 +425,27 @@ function renderImpostorTasks(tasksObj) {
         const li = document.createElement('li');
         li.className = `giocatore-task-item`;
         li.innerHTML = `
-            <span class="task-num">#${idx}</span>
+            <div class="giocatore-task-header">
+                <span class="task-num">#${idx}</span>
+                <span class="task-status-pill pending" id="fake-pill-${taskId}">IN CORSO</span>
+            </div>
             <div class="task-info">
                 <div class="task-title">${taskData.desc}</div>
             </div>
-            <button class="task-btn" id="fake-task-btn-${taskId}">SPUNTA</button>
+            <button class="task-btn" id="fake-task-btn-${taskId}">SPUNTA TASK</button>
         `;
         const btn = li.querySelector(`#fake-task-btn-${taskId}`);
         btn.onclick = (e) => {
             li.classList.add('completed');
             btn.disabled = true;
             btn.classList.add('btn-done');
-            btn.textContent = '✔ FATTO';
+            btn.textContent = '✔ COMPLETATA';
+            const pill = li.querySelector(`#fake-pill-${taskId}`);
+            if (pill) {
+                pill.classList.remove('pending');
+                pill.classList.add('done');
+                pill.textContent = '✔ COMPLETATO';
+            }
         };
         taskList.appendChild(li);
         idx++;

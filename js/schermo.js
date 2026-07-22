@@ -259,6 +259,11 @@ function startConnection() {
         const percentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         if (taskProgressFill) taskProgressFill.style.width = `${percentage}%`;
         if (taskProgressText) taskProgressText.textContent = `${Math.round(percentage)}%`;
+
+        const taskCountText = document.getElementById('task-count-text');
+        if (taskCountText) {
+            taskCountText.textContent = `${completedTasks} / ${totalTasks} completate`;
+        }
     }
 
     async function renderMapConfig(config) {
@@ -391,6 +396,34 @@ function startConnection() {
                 updateTaskBar(players);
 
                 const qrCodeBox = document.getElementById('qr-code-container');
+                const roomCodeDisplay = document.getElementById('room-code-display');
+                const leftTasksBox = document.getElementById('left-tasks-container');
+                const taskbar = document.getElementById('taskbar-container');
+                const globalTimer = document.getElementById('global-timer');
+
+                // Toggle visibility based on game state (waiting vs active game)
+                const isWaiting = (status === 'waiting');
+
+                if (roomCodeDisplay) {
+                    if (isWaiting) roomCodeDisplay.classList.remove('hidden');
+                    else roomCodeDisplay.classList.add('hidden');
+                }
+                if (qrCodeBox) {
+                    if (isWaiting) qrCodeBox.classList.remove('hidden');
+                    else qrCodeBox.classList.add('hidden');
+                }
+                if (leftTasksBox) {
+                    if (isWaiting) leftTasksBox.classList.remove('hidden');
+                    else leftTasksBox.classList.add('hidden');
+                }
+                if (taskbar) {
+                    if (isWaiting) taskbar.classList.add('hidden');
+                    else taskbar.classList.remove('hidden');
+                }
+                if (globalTimer) {
+                    if (isWaiting) globalTimer.classList.add('hidden');
+                    else globalTimer.classList.remove('hidden');
+                }
 
                 if (status === 'waiting') {
                     if(overlayMeeting) overlayMeeting.classList.add('hidden');
@@ -399,16 +432,7 @@ function startConnection() {
                     const mainDashboard = document.getElementById('main-dashboard-layout');
                     if (mainDashboard) mainDashboard.classList.remove('hidden');
                     
-                    if (qrCodeBox) qrCodeBox.classList.remove('hidden');
-
-                    const taskbar = document.getElementById('taskbar-container');
-                    if (taskbar) taskbar.classList.add('hidden');
-
-                    const globalTimer = document.getElementById('global-timer');
-                    if (globalTimer) globalTimer.classList.add('hidden');
-                    
                     clearInterval(timerInterval);
-                    
                     renderPlayers(players, votes, maxPlayers);
                 } 
                 else if (status === 'playing') {
@@ -416,14 +440,6 @@ function startConnection() {
                     
                     const mainDashboard = document.getElementById('main-dashboard-layout');
                     if (mainDashboard) mainDashboard.classList.remove('hidden');
-                    
-                    if (qrCodeBox) qrCodeBox.classList.add('hidden');
-
-                    const taskbar = document.getElementById('taskbar-container');
-                    if (taskbar) taskbar.classList.remove('hidden');
-
-                    const globalTimer = document.getElementById('global-timer');
-                    if (globalTimer) globalTimer.classList.remove('hidden');
                     
                     if (previousStatus === 'waiting') {
                         const roleOverlay = document.getElementById('role-assignment-overlay');

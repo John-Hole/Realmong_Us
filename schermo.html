@@ -48,9 +48,9 @@
     <!-- Main Dashboard Interface (Schermo Grid) -->
     <div class="schermo-lobby-container hidden" id="main-dashboard-layout">
         
-        <!-- LEFT COLUMN: QR Code & Task List -->
+        <!-- LEFT COLUMN: QR Code & Task List / Task Progress -->
         <div class="schermo-left-col">
-            <!-- QR Code Section -->
+            <!-- QR Code Section (Waiting mode only) -->
             <div id="qr-code-container" class="schermo-card qr-card">
                 <div class="qr-info-header">UNISCITI ALLA STANZA</div>
                 <div id="qrcode" class="qrcode-wrapper"></div>
@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <!-- Task List Box (Left) -->
+            <!-- Task List Box (Left - Waiting mode only) -->
             <div id="left-tasks-container" class="schermo-card left-tasks-card">
                 <div class="schermo-card-header">
                     <span class="header-icon">📋</span>
@@ -72,6 +72,23 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Task Progress Card (Left - Game mode) -->
+            <div id="taskbar-container" class="schermo-card taskbar-card hidden">
+                <div class="schermo-card-header">
+                    <span class="header-icon">📊</span>
+                    <h2>PROGRESSO TASK</h2>
+                </div>
+                <div class="taskbar-content">
+                    <div class="taskbar-main-stat">
+                        <span id="task-progress-text" class="taskbar-pct">0%</span>
+                        <span id="task-count-text" class="taskbar-subtext">0 / 0 completate</span>
+                    </div>
+                    <div class="task-progress-wrap">
+                        <div id="task-progress-fill" class="task-progress-fill"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- CENTER COLUMN: Room Code & Map or Center Tasks -->
@@ -79,7 +96,7 @@
             <!-- Room Code / Timer Header -->
             <div class="schermo-card center-header-card">
                 <div id="global-timer" class="game-timer hidden">10:00</div>
-                <div class="room-code-display">
+                <div id="room-code-display" class="room-code-display">
                     <span class="code-title">CODICE STANZA</span>
                     <span id="header-room-code" class="code-val">---</span>
                 </div>
@@ -111,17 +128,6 @@
                             <tbody id="text-tasks-body"></tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- Footer: Task Progress Bar (Shown during game) -->
-            <div id="taskbar-container" class="schermo-card taskbar-card hidden">
-                <div class="taskbar-info">
-                    <span class="taskbar-title">PROGRESSO TASK GLOBALI</span>
-                    <span id="task-progress-text" class="taskbar-pct">0%</span>
-                </div>
-                <div class="task-progress-wrap">
-                    <div id="task-progress-fill" class="task-progress-fill"></div>
                 </div>
             </div>
         </div>

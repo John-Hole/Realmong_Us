@@ -412,8 +412,8 @@ h1, h2, h3 {
     width: 100%;
 }
 
-/* GIOCATORI TASK ITEM STYLING (MATCHING SCHERMATA GENERALE) */
-.task-item, .giocatore-task-item {
+/* GIOCATORI TASK ITEM STYLING (OPTIMIZED FOR MOBILE PLAYER PAGE) */
+.task-item {
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.07) !important;
     border-radius: 12px !important;
@@ -426,45 +426,123 @@ h1, h2, h3 {
     transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-.task-item:hover, .giocatore-task-item:hover {
+.task-item:hover {
     background: rgba(255, 255, 255, 0.06) !important;
     border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
-.task-item.completed, .giocatore-task-item.completed {
+.task-item.completed {
     opacity: 0.55 !important;
     background: rgba(255, 255, 255, 0.015) !important;
+}
+
+.giocatore-task-item {
+    background: rgba(255, 255, 255, 0.035) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+    border-radius: 14px !important;
+    padding: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.8rem !important;
+    margin-bottom: 0.85rem;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.giocatore-task-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+.task-status-pill {
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    padding: 3px 9px !important;
+    border-radius: 50px !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+}
+
+.task-status-pill.pending {
+    background: rgba(234, 179, 8, 0.15) !important;
+    color: #eab308 !important;
+    border: 1px solid rgba(234, 179, 8, 0.3) !important;
+}
+
+.task-status-pill.done {
+    background: rgba(16, 185, 129, 0.15) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.giocatore-task-item:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.giocatore-task-item.completed {
+    opacity: 0.65 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.giocatore-task-item .task-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.giocatore-task-item .task-title {
+    font-weight: 700 !important;
+    font-size: 0.95rem !important;
+    color: #f8fafc !important;
+    line-height: 1.45 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+    text-align: left !important;
 }
 
 .task-btn {
     background: linear-gradient(135deg, #10b981, #059669) !important;
     color: #ffffff !important;
     border: none !important;
-    padding: 0.55rem 1.1rem !important;
-    border-radius: 50px !important;
+    padding: 0.75rem 1rem !important;
+    min-height: 48px !important;
+    width: 100% !important;
+    border-radius: 12px !important;
     font-weight: 800 !important;
-    font-size: 0.8rem !important;
+    font-size: 0.9rem !important;
     letter-spacing: 0.5px !important;
     cursor: pointer !important;
     text-transform: uppercase !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
     transition: all 0.2s ease !important;
-    white-space: nowrap !important;
-    flex-shrink: 0;
+    white-space: normal !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
 }
 
-.task-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4) !important;
+.task-btn:active:not(:disabled) {
+    transform: scale(0.98) !important;
 }
 
 .task-btn.btn-done, .task-btn:disabled {
-    background: rgba(0, 230, 118, 0.12) !important;
-    color: #00e676 !important;
-    border: 1px solid rgba(0, 230, 118, 0.3) !important;
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
     box-shadow: none !important;
     cursor: default !important;
     transform: none !important;
+    opacity: 0.9 !important;
 }
 
 .kill-btn {
@@ -1144,31 +1222,68 @@ body.schermo-body, body.teatro-body {
     width: 25%;
 }
 
-/* TASK PROGRESS BAR (IN GAME) */
+/* TASK PROGRESS BAR (IN GAME - LEFT PANEL) */
 .taskbar-card {
-    flex-shrink: 0;
+    flex: 1;
     background: rgba(18, 24, 37, 0.9);
-    padding: 0.8rem 1.2rem;
-}
-
-.taskbar-info {
+    padding: 1.5rem 1.2rem;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.4rem;
+    flex-direction: column;
+    align-items: stretch;
 }
 
-.taskbar-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #94a3b8;
-    letter-spacing: 1px;
+.taskbar-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.8rem;
+    padding: 1rem 0;
+}
+
+.taskbar-main-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
 }
 
 .taskbar-pct {
-    font-size: 1rem;
+    font-size: 3.8rem;
     font-weight: 800;
-    color: var(--accent-green);
+    color: #22c55e;
+    text-shadow: 0 0 25px rgba(34, 197, 94, 0.5);
+    font-family: var(--font-ui);
+    line-height: 1;
+}
+
+.taskbar-subtext {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.task-progress-wrap {
+    width: 100%;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.task-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #10b981, #22c55e, #4ade80);
+    border-radius: 13px;
+    transition: width 0.5s ease-in-out;
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.7);
 }
 
 /* PLAYERS SIDEBAR CARD */
