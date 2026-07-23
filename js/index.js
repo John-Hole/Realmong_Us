@@ -253,38 +253,82 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// --- INLINE AUTH ERROR UI HELPERS ---
+const authErrorMsg = document.getElementById('auth-error-msg');
+const authErrorText = document.getElementById('auth-error-text');
+
+function showAuthError(message, targetField = null) {
+    if (authErrorText && authErrorMsg) {
+        authErrorText.textContent = message;
+        authErrorMsg.classList.remove('hidden');
+    }
+    
+    emailInput.classList.remove('input-error');
+    passwordInput.classList.remove('input-error');
+
+    if (targetField === 'email') {
+        emailInput.classList.add('input-error');
+        emailInput.focus();
+    } else if (targetField === 'password') {
+        passwordInput.classList.add('input-error');
+        passwordInput.focus();
+    } else if (targetField === 'both') {
+        emailInput.classList.add('input-error');
+        passwordInput.classList.add('input-error');
+        if (!emailInput.value) emailInput.focus();
+        else passwordInput.focus();
+    }
+}
+
+function clearAuthError() {
+    if (authErrorMsg) authErrorMsg.classList.add('hidden');
+    emailInput.classList.remove('input-error');
+    passwordInput.classList.remove('input-error');
+}
+
+emailInput.addEventListener('input', clearAuthError);
+passwordInput.addEventListener('input', clearAuthError);
+
 btnLogin.addEventListener('click', async () => {
+    clearAuthError();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
 
-    if (!email || !password) {
-        return alert("Inserisci sia l'email che la password.");
+    if (!email && !password) {
+        return showAuthError("Inserisci email e password per accedere.", "both");
+    }
+    if (!email) {
+        return showAuthError("Inserisci il tuo indirizzo email.", "email");
+    }
+    if (!password) {
+        return showAuthError("Inserisci la password.", "password");
     }
 
     try {
         // Tenta prima l'accesso
         await signInWithEmailAndPassword(auth, email, password);
+        clearAuthError();
         showSection('home');
     } catch (loginError) {
         console.log("Login error:", loginError.code, loginError.message);
 
-        // Se l'account non esiste (user-not-found o invalid-credential in Firebase v10), registra automaticamente
+        // Se l'account non esiste, prova la registrazione automatica
         if (loginError.code === 'auth/user-not-found' || loginError.code === 'auth/invalid-credential') {
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("Nuovo account creato ed effettuato l'accesso con successo!");
+                clearAuthError();
                 showSection('home');
                 return;
             } catch (regError) {
                 console.log("Reg error:", regError.code, regError.message);
                 if (regError.code === 'auth/email-already-in-use') {
-                    alert("Password errata per questa email.");
+                    showAuthError("Password errata per questa email.", "password");
                 } else if (regError.code === 'auth/weak-password') {
-                    alert("La password deve contenere almeno 6 caratteri.");
+                    showAuthError("La password deve contenere almeno 6 caratteri.", "password");
                 } else if (regError.code === 'auth/invalid-email') {
-                    alert("Indirizzo email non valido.");
+                    showAuthError("Indirizzo email non valido.", "email");
                 } else {
-                    alert("Password errata o inserita una credenziale non valida.");
+                    showAuthError("Password errata per questa email.", "password");
                 }
                 return;
             }
@@ -292,11 +336,11 @@ btnLogin.addEventListener('click', async () => {
 
         // Altri errori di login
         if (loginError.code === 'auth/wrong-password') {
-            alert("Password errata per questa email.");
+            showAuthError("Password errata per questa email.", "password");
         } else if (loginError.code === 'auth/invalid-email') {
-            alert("Indirizzo email non valido.");
+            showAuthError("Indirizzo email non valido.", "email");
         } else {
-            alert("Errore di accesso: " + (loginError.message || "Credenziali non valide."));
+            showAuthError(loginError.message || "Credenziali non valide.", "both");
         }
     }
 });
@@ -311,6 +355,7 @@ getRedirectResult(auth).then((result) => {
 });
 
 btnGoogleLogin.addEventListener('click', async () => {
+    clearAuthError();
     try {
         const provider = new GoogleAuthProvider();
         await signInWithPopup(auth, provider);
@@ -324,12 +369,12 @@ btnGoogleLogin.addEventListener('click', async () => {
                 const provider = new GoogleAuthProvider();
                 await signInWithRedirect(auth, provider);
             } catch (err) {
-                alert("Il tuo browser sta bloccando i popup. Abilita i popup nella barra degli indirizzi o usa l'accesso Email / Ospite.");
+                showAuthError("Abilita i popup o usa l'accesso Email / Ospite.");
             }
         } else if (error.code === 'auth/unauthorized-domain') {
-            alert("Il dominio " + window.location.hostname + " non è ancora stato autorizzato nelle impostazioni di Firebase Authentication.");
+            showAuthError("Dominio " + window.location.hostname + " non autorizzato su Firebase.");
         } else {
-            alert("Errore login Google: " + (error.message || error.code));
+            showAuthError("Errore login Google: " + (error.message || error.code));
         }
     }
 });

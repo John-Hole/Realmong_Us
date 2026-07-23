@@ -65,6 +65,19 @@
             border-radius: 14px !important;
             line-height: 1.2;
         }
+        .input-error {
+            border: 2px solid #ef4444 !important;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.45) !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+            transition: all 0.2s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
     </style>
 </head>
 <body>
@@ -101,6 +114,12 @@
         <!-- AUTH SECTION (Login/Register Form) -->
         <div id="section-auth" class="section-container hidden">
             <h2>Account / Accesso</h2>
+            
+            <!-- INLINE AUTH ERROR BANNER -->
+            <div id="auth-error-msg" class="hidden" style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; color: #fca5a5; padding: 0.75rem 1rem; border-radius: 12px; margin-top: 0.8rem; font-size: 0.9rem; text-align: center; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; animation: shake 0.3s ease-in-out;">
+                <span style="font-size: 1.1rem;">⚠️</span>
+                <span id="auth-error-text"></span>
+            </div>
             
             <!-- EMAIL/PASSWORD FORM -->
             <div id="auth-email-form" style="margin-top: 1rem;">
