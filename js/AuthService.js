@@ -14,6 +14,10 @@ import {
   signOut,
   onAuthStateChanged,
   getIdToken,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 class AuthService {
@@ -60,6 +64,53 @@ class AuthService {
     } catch (error) {
       console.error('❌ Guest login failed:', error);
       throw new Error(`Authentication failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Register with email and password
+   */
+  async registerWithEmail(email, password) {
+    try {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('✅ Registration successful:', credential.user.uid);
+      return credential.user;
+    } catch (error) {
+      console.error('❌ Registration failed:', error);
+      throw new Error(`Registration failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Login with email and password
+   */
+  async loginWithEmail(email, password) {
+    try {
+      const credential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Email login successful:', credential.user.uid);
+      return credential.user;
+    } catch (error) {
+      console.error('❌ Email login failed:', error);
+      throw new Error(`Login failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Login with Google
+   */
+  async loginWithGoogle() {
+    try {
+      const provider = new GoogleAuthProvider();
+      const credential = await signInWithPopup(auth, provider);
+      console.log('✅ Google login successful:', credential.user.uid);
+      return credential.user;
+    } catch (error) {
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.log('ℹ️ Google login cancelled by user');
+        return null;
+      }
+      console.error('❌ Google login failed:', error);
+      throw new Error(`Google login failed: ${error.message}`);
     }
   }
 
@@ -210,6 +261,7 @@ class AuthService {
       session,
       user: this.currentUser ? {
         uid: this.currentUser.uid,
+        email: this.currentUser.email,
         isAnonymous: this.currentUser.isAnonymous,
         metadata: this.currentUser.metadata,
       } : null,

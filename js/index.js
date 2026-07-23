@@ -1,6 +1,6 @@
 import { db, auth } from './firebase-config.js';
 import { ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 // DOM Elements - Sections
 const homeSection = document.getElementById('section-home');
@@ -30,6 +30,8 @@ const emailInput = document.getElementById('auth-email');
 const passwordInput = document.getElementById('auth-password');
 const btnLogin = document.getElementById('btn-login');
 const btnRegister = document.getElementById('btn-register');
+const btnGoogleLogin = document.getElementById('btn-google-login');
+const btnAnonLogin = document.getElementById('btn-anon-login');
 
 // Join inputs
 const joinCode = document.getElementById('join-code');
@@ -259,6 +261,29 @@ btnRegister.addEventListener('click', async () => {
         showSection('home');
     } catch (error) {
         alert("Errore registrazione: " + error.message);
+    }
+});
+
+btnGoogleLogin.addEventListener('click', async () => {
+    try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+        showSection('home');
+    } catch (error) {
+        if (error.code === 'auth/popup-closed-by-user') {
+            console.log('Google login cancelled');
+        } else {
+            alert("Errore login Google: " + error.message);
+        }
+    }
+});
+
+btnAnonLogin.addEventListener('click', async () => {
+    try {
+        await signInAnonymously(auth);
+        showSection('home');
+    } catch (error) {
+        alert("Errore login anonimo: " + error.message);
     }
 });
 
