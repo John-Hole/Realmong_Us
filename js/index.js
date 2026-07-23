@@ -418,15 +418,27 @@ function createTemplateCard(id, data, isCustom) {
 // --- CREATE SETTINGS LOGIC ---
 let currentEditId = null;
 
+let currentFormDisabled = false;
+
 function setFormDisabled(disabled) {
+    currentFormDisabled = disabled;
     createTemplateName.disabled = disabled;
     createImpostors.disabled = disabled;
     createKillCooldown.disabled = disabled;
     createMaxMeetings.disabled = disabled;
     if (createDiscussionDuration) createDiscussionDuration.disabled = disabled;
     if (createVotingDuration) createVotingDuration.disabled = disabled;
-    if (btnAddRoundTime) btnAddRoundTime.disabled = disabled;
-    document.querySelectorAll('.round-time-input, .btn-remove-round').forEach(el => el.disabled = disabled);
+    if (btnAddRoundTime) {
+        btnAddRoundTime.disabled = disabled;
+        if (disabled) btnAddRoundTime.classList.add('hidden');
+        else btnAddRoundTime.classList.remove('hidden');
+    }
+    document.querySelectorAll('.round-time-input, .btn-remove-round').forEach(el => {
+        el.disabled = disabled;
+        if (el.classList.contains('btn-remove-round') && disabled) {
+            el.classList.add('hidden');
+        }
+    });
     createScientist.disabled = disabled;
     createMaxPlayers.disabled = disabled;
 
@@ -436,8 +448,15 @@ function setFormDisabled(disabled) {
 
     createEnableTasks.disabled = disabled;
     createTaskType.disabled = disabled;
-    btnAddTextTask.disabled = disabled;
-    textTasksContainer.querySelectorAll('input, button').forEach(el => el.disabled = disabled);
+    if (btnAddTextTask) {
+        btnAddTextTask.disabled = disabled;
+        if (disabled) btnAddTextTask.classList.add('hidden');
+        else btnAddTextTask.classList.remove('hidden');
+    }
+    textTasksContainer.querySelectorAll('input, button').forEach(el => {
+        el.disabled = disabled;
+        if (el.tagName === 'BUTTON' && disabled) el.classList.add('hidden');
+    });
 }
 
 function openCreateSettings(id, data, isDuplicate = false, isBase = false) {
@@ -629,33 +648,41 @@ function renderRoundTimesUI(timesArr = [10, 7, 5]) {
         const pillBorder = isLast ? 'rgba(56, 189, 248, 0.35)' : 'rgba(255, 255, 255, 0.12)';
         const pillColor = isLast ? '#38bdf8' : '#e2e8f0';
         
+        const showRemove = timesArr.length > 1 && !currentFormDisabled;
+
         div.innerHTML = `
             <div style="width: 155px; flex-shrink: 0; display: flex; align-items: center;">
                 <span style="background: ${pillBg}; border: 1px solid ${pillBorder}; color: ${pillColor}; padding: 0.25rem 0.65rem; border-radius: 50px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.3px; display: inline-block; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
                     ${labelText}
                 </span>
             </div>
-            <input type="number" class="round-time-input" value="${mins}" min="1" max="120" style="flex: 1;">
+            <input type="number" class="round-time-input" value="${mins}" min="1" max="120" style="flex: 1;" ${currentFormDisabled ? 'disabled' : ''}>
             <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; flex-shrink: 0;">min</span>
-            ${timesArr.length > 1 ? `<button type="button" class="btn btn-danger btn-remove-round" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; min-height: 32px; border-radius: 8px; font-weight: 800; flex-shrink: 0;" title="Rimuovi round">✕</button>` : ''}
+            ${showRemove ? `<button type="button" class="btn btn-danger btn-remove-round" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; min-height: 32px; border-radius: 8px; font-weight: 800; flex-shrink: 0;" title="Rimuovi round">✕</button>` : ''}
         `;
 
-        if (timesArr.length > 1) {
+        if (showRemove) {
             const removeBtn = div.querySelector('.btn-remove-round');
             if (removeBtn) {
                 removeBtn.onclick = () => {
-                    currentRoundTimes.splice(idx, 1);
-                    renderRoundTimesUI(currentRoundTimes);
+                    if (currentFormDisabled) return;
+                    const inputs = roundTimesContainer.querySelectorAll('.round-time-input');
+                    const updated = [];
+                    inputs.forEach(inp => updated.push(parseInt(inp.value) || 1));
+                    updated.splice(idx, 1);
+                    renderRoundTimesUI(updated);
                 };
             }
         }
 
         const inputEl = div.querySelector('.round-time-input');
         if (inputEl) {
-            inputEl.onchange = (e) => {
+            const updateVal = (e) => {
                 const val = parseInt(e.target.value) || 1;
                 currentRoundTimes[idx] = val;
             };
+            inputEl.oninput = updateVal;
+            inputEl.onchange = updateVal;
         }
 
         roundTimesContainer.appendChild(div);
@@ -665,9 +692,16 @@ function renderRoundTimesUI(timesArr = [10, 7, 5]) {
 if (btnAddRoundTime) {
     btnAddRoundTime.addEventListener('click', (e) => {
         e.preventDefault();
-        const lastVal = currentRoundTimes.length > 0 ? currentRoundTimes[currentRoundTimes.length - 1] : 5;
-        currentRoundTimes.push(lastVal);
-        renderRoundTimesUI(currentRoundTimes);
+        if (currentFormDisabled) return;
+        const inputs = roundTimesContainer.querySelectorAll('.round-time-input');
+        const updatedTimes = [];
+        inputs.forEach(input => {
+            const v = parseInt(input.value) || 1;
+            updatedTimes.push(v);
+        });
+        const lastVal = updatedTimes.length > 0 ? updatedTimes[updatedTimes.length - 1] : 5;
+        updatedTimes.push(lastVal);
+        renderRoundTimesUI(updatedTimes);
     });
 }
 
