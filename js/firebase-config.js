@@ -4,7 +4,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-aut
 
 // Firebase Configuration for realmong-us-g20b
 const firebaseConfig = {
-  apiKey: "AIzaSyBSbg2-cLl3SYG4odF2NYWWDtshoEv6lVo",
+  apiKey: "AIzaSyDJvLk7jYzBn5YoNIUlhTgwl0TAFMcpxVc",
   authDomain: "realmong-us-g20b.firebaseapp.com",
   databaseURL: "https://realmong-us-g20b-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "realmong-us-g20b",

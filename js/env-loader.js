@@ -64,7 +64,7 @@ export const loadFirebaseConfig = async () => {
 
   // Fallback to placeholder (project needs to be set up)
   return {
-    apiKey: "AIzaSyBSbg2-cLl3SYG4odF2NYWWDtshoEv6lVo",
+    apiKey: "AIzaSyDJvLk7jYzBn5YoNIUlhTgwl0TAFMcpxVc",
     authDomain: "realmong-us-g20b.firebaseapp.com",
     databaseURL: "https://realmong-us-g20b-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "realmong-us-g20b",
