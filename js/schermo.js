@@ -542,26 +542,34 @@ function startConnection() {
                     const headerCard = globalTimer ? globalTimer.closest('.center-header-card') : null;
                     clearInterval(timerInterval);
                     
-                    timerInterval = setInterval(() => {
-                        const remaining = Math.max(0, data.state.voting_endtime - Date.now());
-                        const sec = Math.ceil(remaining / 1000);
+                    if (!data.state.voting_endtime || data.state.voting_endtime === 0) {
                         if (globalTimer) {
-                            globalTimer.textContent = `VOTAZIONE: ${sec}s`;
-                            
-                            // Lampeggia di rosso negli ultimi 15 secondi di votazione
-                            if (remaining <= 15000 && remaining > 0) {
-                                globalTimer.classList.add('timer-flash-red');
-                                if (headerCard) headerCard.classList.add('card-flash-red');
-                            } else {
-                                clearTimerFlashing();
-                                globalTimer.style.color = "var(--accent-red)";
-                            }
-                        }
-                        if(remaining <= 0) {
                             clearTimerFlashing();
-                            clearInterval(timerInterval);
+                            globalTimer.textContent = `VOTAZIONE LIBERA`;
+                            globalTimer.style.color = "var(--accent-red)";
                         }
-                    }, 100);
+                    } else {
+                        timerInterval = setInterval(() => {
+                            const remaining = Math.max(0, data.state.voting_endtime - Date.now());
+                            const sec = Math.ceil(remaining / 1000);
+                            if (globalTimer) {
+                                globalTimer.textContent = `VOTAZIONE: ${sec}s`;
+                                
+                                // Lampeggia di rosso negli ultimi 15 secondi di votazione
+                                if (remaining <= 15000 && remaining > 0) {
+                                    globalTimer.classList.add('timer-flash-red');
+                                    if (headerCard) headerCard.classList.add('card-flash-red');
+                                } else {
+                                    clearTimerFlashing();
+                                    globalTimer.style.color = "var(--accent-red)";
+                                }
+                            }
+                            if(remaining <= 0) {
+                                clearTimerFlashing();
+                                clearInterval(timerInterval);
+                            }
+                        }, 100);
+                    }
                     renderPlayers(players, votes, maxPlayers);
                 }
                 else if (status === 'impostors_win') {

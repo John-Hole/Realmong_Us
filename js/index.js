@@ -399,7 +399,8 @@ function createTemplateCard(id, data, isCustom) {
     const taskLabel = !isTasksActive ? 'Disabilitate' : (taskTypeStr === 'custom' ? 'Personalizzate' : 'Predefinite');
 
     const discText = data.discussionDuration > 0 ? `${data.discussionDuration}s` : 'Libera';
-    const votText = `${data.votingDuration || data.meetingDuration || 60}s`;
+    const votVal = data.votingDuration !== undefined ? data.votingDuration : (data.meetingDuration !== undefined ? data.meetingDuration : 60);
+    const votText = votVal === 0 ? 'Libera' : `${votVal}s`;
 
     const details = document.createElement('div');
     details.style.fontSize = '0.8rem';
@@ -719,7 +720,8 @@ function getRoomConfigFromUI() {
     }
 
     const discDuration = parseInt(createDiscussionDuration ? createDiscussionDuration.value : 0) || 0;
-    const votDuration = parseInt(createVotingDuration ? createVotingDuration.value : 60) || 60;
+    const votValRaw = createVotingDuration ? createVotingDuration.value.trim() : '60';
+    const votDuration = (votValRaw === '' || isNaN(parseInt(votValRaw))) ? 60 : Math.max(0, parseInt(votValRaw));
 
     const roundInputs = document.querySelectorAll('.round-time-input');
     const roundTimesMins = [];

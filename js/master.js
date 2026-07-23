@@ -215,7 +215,7 @@ if (modalLogs) {
 
 // Click Listeners for Preset Inputs inside Pop-up 1
 const roundPresets = [3, 5, 7, 10, 12, 15];
-const votingPresets = [30, 45, 60, 90, 120, 180];
+const votingPresets = [0, 30, 45, 60, 90, 120];
 
 if (cfgRound1) {
     const parentBox = cfgRound1.closest('.preset-input-box') || cfgRound1;
@@ -335,7 +335,8 @@ function syncTimeConfigUI() {
         cfgDiscussion.value = roomConfig.discussionDuration !== undefined ? roomConfig.discussionDuration : 0;
     }
     if (cfgVoting && activeId !== 'cfg-voting') {
-        cfgVoting.value = roomConfig.votingDuration || roomConfig.meetingDuration || 60;
+        const vVal = roomConfig.votingDuration !== undefined ? roomConfig.votingDuration : roomConfig.meetingDuration;
+        cfgVoting.value = vVal !== undefined ? vVal : 60;
     }
 
     if (roomConfig.roundTimes && Array.isArray(roomConfig.roundTimes) && roomConfig.roundTimes.length > 0) {
@@ -641,7 +642,9 @@ function updateUI(state, players) {
     votingSection.classList.add('hidden');
 
     if (btnStartVoting) {
-        btnStartVoting.textContent = `Inizio Votazioni (${roomConfig.meetingDuration || 60}s)`;
+        const vVal = roomConfig ? (roomConfig.votingDuration !== undefined ? roomConfig.votingDuration : roomConfig.meetingDuration) : 60;
+        const votSec = (vVal !== undefined && vVal !== null && !isNaN(parseInt(vVal))) ? parseInt(vVal) : 60;
+        btnStartVoting.textContent = votSec > 0 ? `Inizio Votazioni (${votSec}s)` : `Inizio Votazioni (Libera)`;
     }
 
     if (modalLiveTimerSection) {
@@ -745,11 +748,17 @@ function renderMasterTimer() {
         timerColor = "#ffeb3b";
     } else if (status === 'voting') {
         if (currentTimerPill) currentTimerPill.classList.remove('hidden');
-        const remaining = Math.max(0, (currentState.voting_endtime || 0) - Date.now());
-        const sec = Math.ceil(remaining / 1000);
-        headerTimerText = `${sec}s`;
-        liveClockText = `🗳️ VOTAZIONE: ${sec}s`;
-        modalTimerText = `🗳️ VOTAZIONE: ${sec}s`;
+        if (!currentState.voting_endtime || currentState.voting_endtime === 0) {
+            headerTimerText = "Libera";
+            liveClockText = "🗳️ VOTAZIONE LIBERA";
+            modalTimerText = "🗳️ VOTAZIONE LIBERA";
+        } else {
+            const remaining = Math.max(0, currentState.voting_endtime - Date.now());
+            const sec = Math.ceil(remaining / 1000);
+            headerTimerText = `${sec}s`;
+            liveClockText = `🗳️ VOTAZIONE: ${sec}s`;
+            modalTimerText = `🗳️ VOTAZIONE: ${sec}s`;
+        }
         timerColor = "#9c27b0";
     } else if (status === 'impostors_win' || status === 'crewmates_win') {
         if (currentTimerPill) currentTimerPill.classList.add('hidden');
@@ -877,7 +886,8 @@ async function resolveMeeting(players, votes, state) {
 if (btnSaveTimeCfg) {
     btnSaveTimeCfg.addEventListener('click', async () => {
         const discSec = Math.max(0, parseInt(cfgDiscussion ? cfgDiscussion.value : 0) || 0);
-        const votingSec = Math.max(5, parseInt(cfgVoting ? cfgVoting.value : 60) || 60);
+        const votingValRaw = cfgVoting ? cfgVoting.value.trim() : '60';
+        const votingSec = (votingValRaw === '' || isNaN(parseInt(votingValRaw))) ? 60 : Math.max(0, parseInt(votingValRaw));
 
         const roundInputs = document.querySelectorAll('.master-round-time-input');
         const roundTimesMins = [];
@@ -1100,10 +1110,17 @@ btnStartDiscussion.addEventListener('click', async () => {
 });
 
 btnStartVoting.addEventListener('click', async () => {
-    const votingDuration = (roomConfig.votingDuration || roomConfig.meetingDuration || 60) * 1000;
+    let votSec = 60;
+    if (roomConfig) {
+        const rawVot = roomConfig.votingDuration !== undefined ? roomConfig.votingDuration : roomConfig.meetingDuration;
+        if (rawVot !== undefined && rawVot !== null && !isNaN(parseInt(rawVot))) {
+            votSec = parseInt(rawVot);
+        }
+    }
+    const votingEndTime = votSec > 0 ? Date.now() + (votSec * 1000) : 0;
     await update(roomRef, {
         'state/game_status': 'voting',
-        'state/voting_endtime': Date.now() + votingDuration
+        'state/voting_endtime': votingEndTime
     });
 });
 
