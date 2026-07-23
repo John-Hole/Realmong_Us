@@ -136,10 +136,11 @@
 
         <!-- CREATE NEW / EDIT TEMPLATE SETTINGS -->
         <div id="section-create" class="section-container hidden">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                 <h2>Impostazioni Template</h2>
                 <button id="btn-create-back" class="btn btn-danger" style="padding: 0.5rem 1rem;">Annulla</button>
             </div>
+            <p id="create-template-subtitle" style="font-size: 0.85rem; color: #aaa; margin-bottom: 1.5rem; line-height: 1.4;"></p>
             
             <div class="form-group">
                 <label>Nome Template *</label>
@@ -217,7 +218,11 @@
                 <button id="btn-add-text-task" class="btn" style="padding: 0.5rem; font-size: 0.8rem; margin-top: 0.5rem;">+ Aggiungi Task</button>
             </div>
 
-            <button id="btn-save-start-room" class="btn" style="width: 100%; margin-top: 1.5rem; background: var(--accent-cyan); color: black;">SALVA E AVVIA STANZA</button>
+            <div style="display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: center;">
+                <button id="btn-create-cancel-bottom" class="btn btn-danger" style="flex: 1; min-width: 140px;">INDIETRO / ANNULLA</button>
+                <button id="btn-save-template-only" class="btn" style="flex: 1; background: #3f51b5; color: white; min-width: 150px;">SALVA TEMPLATE</button>
+                <button id="btn-save-start-room" class="btn" style="flex: 1; background: var(--accent-cyan); color: black; min-width: 170px;">SALVA E AVVIA STANZA</button>
+            </div>
         </div>
     </div>
 

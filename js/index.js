@@ -23,6 +23,7 @@ const btnAuthBack = document.getElementById('btn-auth-back');
 const btnTplBack = document.getElementById('btn-tpl-back');
 const btnJoinBack = document.getElementById('btn-join-back');
 const btnCreateBack = document.getElementById('btn-create-back');
+const btnCreateCancelBottom = document.getElementById('btn-create-cancel-bottom');
 
 // Auth inputs
 const emailInput = document.getElementById('auth-email');
@@ -57,6 +58,8 @@ const uploadStatus = document.getElementById('upload-status');
 const textTasksContainer = document.getElementById('text-tasks-container');
 const btnAddTextTask = document.getElementById('btn-add-text-task');
 const btnSaveStartRoom = document.getElementById('btn-save-start-room');
+const btnSaveTemplateOnly = document.getElementById('btn-save-template-only');
+const createTemplateSubtitle = document.getElementById('create-template-subtitle');
 
 let currentUser = null;
 let currentBase64Image = null;
@@ -134,6 +137,7 @@ btnAuthBack.addEventListener('click', () => showSection('home'));
 btnTplBack.addEventListener('click', () => showSection('home'));
 btnJoinBack.addEventListener('click', () => showSection('home'));
 btnCreateBack.addEventListener('click', () => showSection('templates'));
+btnCreateCancelBottom?.addEventListener('click', () => showSection('templates'));
 
 btnGoCreate.addEventListener('click', () => {
     if (currentUser) {
@@ -230,6 +234,7 @@ async function loadUserTemplates(uid) {
     const dbRef = ref(db);
     try {
         const snapshot = await get(child(dbRef, `users/${uid}/templates`));
+        renderBaseTemplates();
         if (snapshot.exists()) {
             userTemplates = snapshot.val();
             // Append user templates
@@ -250,8 +255,9 @@ function createTemplateCard(id, data, isCustom) {
     card.onclick = () => startRoomWithConfig(data);
 
     const title = document.createElement('h3');
-    title.textContent = data.name || id;
+    title.textContent = data.name || (id === 'base' ? 'Standard Realmong' : id);
     title.style.marginBottom = '1rem';
+    title.style.paddingRight = '2.5rem'; // Spazio per il pulsante menu 3 puntini
     card.appendChild(title);
 
     const details = document.createElement('div');
@@ -264,61 +270,65 @@ function createTemplateCard(id, data, isCustom) {
     `;
     card.appendChild(details);
 
+    // Menu a 3 puntini (presente sia per il template base che per quelli custom)
+    const menuBtn = document.createElement('button');
+    menuBtn.innerHTML = '&#8942;'; // 3 vertical dots
+    menuBtn.className = 'template-menu-btn';
+    menuBtn.title = 'Opzioni template';
+    
+    const menuDrop = document.createElement('div');
+    menuDrop.className = 'template-menu-dropdown hidden';
+    
+    const editBtn = document.createElement('button');
+    editBtn.textContent = isCustom ? 'Modifica' : 'Modifica / Vedi Settaggi';
+    editBtn.className = 'template-menu-item';
+    editBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        menuDrop.classList.add('hidden');
+        openCreateSettings(id, data, false, !isCustom); 
+    };
+    
+    const dupeBtn = document.createElement('button');
+    dupeBtn.textContent = 'Duplica e Modifica';
+    dupeBtn.className = 'template-menu-item';
+    dupeBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        menuDrop.classList.add('hidden');
+        openCreateSettings(id, data, true, false); 
+    };
+    
+    menuDrop.appendChild(editBtn);
+    menuDrop.appendChild(dupeBtn);
+
     if (isCustom) {
-        const menuBtn = document.createElement('button');
-        menuBtn.innerHTML = '&#8942;'; // 3 vertical dots
-        menuBtn.className = 'template-menu-btn';
-        
-        const menuDrop = document.createElement('div');
-        menuDrop.className = 'template-menu-dropdown hidden';
-        
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Modifica';
-        editBtn.className = 'template-menu-item';
-        editBtn.onclick = (e) => { 
-            e.stopPropagation(); 
-            menuDrop.classList.add('hidden');
-            openCreateSettings(id, data, false); 
-        };
-        
-        const dupeBtn = document.createElement('button');
-        dupeBtn.textContent = 'Duplica';
-        dupeBtn.className = 'template-menu-item';
-        dupeBtn.onclick = (e) => { 
-            e.stopPropagation(); 
-            menuDrop.classList.add('hidden');
-            openCreateSettings(id, data, true); 
-        };
-        
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Elimina';
         delBtn.className = 'template-menu-item template-menu-item-danger';
         delBtn.onclick = async (e) => { 
             e.stopPropagation(); 
             menuDrop.classList.add('hidden');
-            if(confirm("Sicuro di voler eliminare questo template?")) {
+            if(confirm(`Sicuro di voler eliminare il template "${data.name || id}"?`)) {
                 await remove(ref(db, `users/${currentUser.uid}/templates/${id}`));
-                loadUserTemplates(currentUser.uid);
+                renderBaseTemplates();
+                if (currentUser) {
+                    loadUserTemplates(currentUser.uid);
+                }
             }
         };
-
-        menuDrop.appendChild(editBtn);
-        menuDrop.appendChild(dupeBtn);
         menuDrop.appendChild(delBtn);
-
-        menuBtn.onclick = (e) => {
-            e.stopPropagation();
-            const wasHidden = menuDrop.classList.contains('hidden');
-            // Hide all other dropdowns
-            document.querySelectorAll('.template-menu-dropdown').forEach(d => d.classList.add('hidden'));
-            if (wasHidden) {
-                menuDrop.classList.remove('hidden');
-            }
-        };
-
-        card.appendChild(menuBtn);
-        card.appendChild(menuDrop);
     }
+
+    menuBtn.onclick = (e) => {
+        e.stopPropagation();
+        const wasHidden = menuDrop.classList.contains('hidden');
+        document.querySelectorAll('.template-menu-dropdown').forEach(d => d.classList.add('hidden'));
+        if (wasHidden) {
+            menuDrop.classList.remove('hidden');
+        }
+    };
+
+    card.appendChild(menuBtn);
+    card.appendChild(menuDrop);
 
     templatesGrid.appendChild(card);
 }
@@ -326,10 +336,20 @@ function createTemplateCard(id, data, isCustom) {
 // --- CREATE SETTINGS LOGIC ---
 let currentEditId = null;
 
-function openCreateSettings(id, data, isDuplicate = false) {
-    currentEditId = isDuplicate ? null : id; // If duplicating, save as new. If editing, we overwrite (not implemented yet, but keeping structure). Actually we just save a new one.
+function openCreateSettings(id, data, isDuplicate = false, isBase = false) {
+    // Se è il template base o un duplicato, currentEditId è null (così il salvataggio genera un nuovo template).
+    // Se è un template custom esistente, usiamo l'ID per aggiornarlo.
+    currentEditId = (isDuplicate || isBase || id === 'base') ? null : id;
 
     if (data) {
+        if (isBase || id === 'base') {
+            createTemplateSubtitle.textContent = "Stai visualizzando il Template Base. Il template base non può essere sovrascritto direttamente: le eventuali modifiche verranno salvate come nuovo template.";
+        } else if (isDuplicate) {
+            createTemplateSubtitle.textContent = `Stai duplicando "${data.name || 'Template'}". Le modifiche verranno salvate come un nuovo template.`;
+        } else {
+            createTemplateSubtitle.textContent = `Stai modificando il tuo template "${data.name || 'Template'}".`;
+        }
+
         createTemplateName.value = (data.name || "") + (isDuplicate ? " (Copia)" : "");
         createImpostors.value = data.impostorCount || 1;
         createKillCooldown.value = data.killCooldown || 120;
@@ -361,7 +381,7 @@ function openCreateSettings(id, data, isDuplicate = false) {
             uploadStatus.textContent = currentBase64Image ? "Immagine caricata dal template." : "";
         }
     } else {
-        // Reset to empty
+        createTemplateSubtitle.textContent = "Crea un nuovo template personalizzato con le tue impostazioni preferite.";
         createTemplateName.value = "";
         createImpostors.value = 1;
         createKillCooldown.value = 120;
@@ -496,6 +516,43 @@ function generateRoomCode() {
     return code;
 }
 
+async function saveTemplateToFirebase(config) {
+    if (!currentUser) {
+        alert("Per salvare un template devi prima accedere col tuo account.");
+        authModal.classList.remove('hidden');
+        return false;
+    }
+
+    const templateId = currentEditId || Date.now().toString();
+    try {
+        await set(ref(db, `users/${currentUser.uid}/templates/${templateId}`), config);
+        renderBaseTemplates();
+        await loadUserTemplates(currentUser.uid);
+        return true;
+    } catch(e) {
+        console.error("Errore salvataggio:", e);
+        alert("Errore durante il salvataggio: " + e.message);
+        return false;
+    }
+}
+
+btnSaveTemplateOnly.addEventListener('click', async () => {
+    const config = getRoomConfigFromUI();
+    if (config.mapMode === 'photo' && !config.mapImage) {
+        if (!confirm("Non hai caricato nessuna immagine mappa. Continuare comunque?")) return;
+    }
+
+    if (!config.name) {
+        return alert("Inserisci un Nome Template per salvarlo.");
+    }
+
+    const saved = await saveTemplateToFirebase(config);
+    if (saved) {
+        alert("Template salvato con successo!");
+        showSection('templates');
+    }
+});
+
 btnSaveStartRoom.addEventListener('click', async () => {
     const config = getRoomConfigFromUI();
     if (config.mapMode === 'photo' && !config.mapImage) {
@@ -508,13 +565,7 @@ btnSaveStartRoom.addEventListener('click', async () => {
 
     // Save template if user is logged in
     if (currentUser) {
-        const templateId = Date.now().toString();
-        try {
-            await set(ref(db, `users/${currentUser.uid}/templates/${templateId}`), config);
-            alert("Template salvato con successo! Avvio stanza in corso...");
-        } catch(e) {
-            console.error("Errore salvataggio:", e);
-        }
+        await saveTemplateToFirebase(config);
     }
 
     // Start Room
