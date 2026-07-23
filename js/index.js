@@ -212,9 +212,15 @@ btnPromptLogin.addEventListener('click', () => {
     showSection('auth');
 });
 
-btnPromptGuest.addEventListener('click', () => {
+btnPromptGuest.addEventListener('click', async () => {
     authModal.classList.add('hidden');
-    showSection('templates');
+    try {
+        await signInAnonymously(auth);
+        showSection('templates');
+    } catch (e) {
+        console.error('Guest login failed:', e);
+        showSection('templates');
+    }
 });
 
 
@@ -305,29 +311,31 @@ function renderAllTemplates() {
     // 1. Render Base Template ("Standard Realmong") FIRST
     createTemplateCard('base', baseTemplate, false);
 
-    // 2. Render User Custom Templates SECOND
-    if (userTemplates) {
+    // 2. Render User Custom Templates SECOND (Only if logged in with a real account)
+    if (currentUser && !currentUser.isAnonymous && userTemplates) {
         for (const key in userTemplates) {
             createTemplateCard(key, userTemplates[key], true);
         }
     }
 
-    // 3. Render "+ CREA NUOVO" Button LAST
-    const createBtn = document.createElement('div');
-    createBtn.style = `border: 2px dashed var(--accent-cyan); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent-cyan); font-weight: bold; flex-direction: column; min-height: 120px; transition: all 0.2s; background: rgba(0, 229, 255, 0.03);`;
-    createBtn.onmouseover = () => {
-        createBtn.style.background = 'rgba(0, 229, 255, 0.1)';
-        createBtn.style.borderColor = '#33eaff';
-        createBtn.style.transform = 'translateY(-2px)';
-    };
-    createBtn.onmouseout = () => {
-        createBtn.style.background = 'rgba(0, 229, 255, 0.03)';
-        createBtn.style.borderColor = 'var(--accent-cyan)';
-        createBtn.style.transform = 'none';
-    };
-    createBtn.innerHTML = `<span style="font-size: 2.5rem; line-height: 1; margin-bottom: 0.3rem;">+</span><span style="font-size: 0.85rem; letter-spacing: 0.5px;">CREA NUOVO</span>`;
-    createBtn.onclick = () => openCreateSettings(null, null);
-    templatesGrid.appendChild(createBtn);
+    // 3. Render "+ CREA NUOVO" Button LAST (Only if logged in with a real account)
+    if (currentUser && !currentUser.isAnonymous) {
+        const createBtn = document.createElement('div');
+        createBtn.style = `border: 2px dashed var(--accent-cyan); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent-cyan); font-weight: bold; flex-direction: column; min-height: 120px; transition: all 0.2s; background: rgba(0, 229, 255, 0.03);`;
+        createBtn.onmouseover = () => {
+            createBtn.style.background = 'rgba(0, 229, 255, 0.1)';
+            createBtn.style.borderColor = '#33eaff';
+            createBtn.style.transform = 'translateY(-2px)';
+        };
+        createBtn.onmouseout = () => {
+            createBtn.style.background = 'rgba(0, 229, 255, 0.03)';
+            createBtn.style.borderColor = 'var(--accent-cyan)';
+            createBtn.style.transform = 'none';
+        };
+        createBtn.innerHTML = `<span style="font-size: 2.5rem; line-height: 1; margin-bottom: 0.3rem;">+</span><span style="font-size: 0.85rem; letter-spacing: 0.5px;">CREA NUOVO</span>`;
+        createBtn.onclick = () => openCreateSettings(null, null);
+        templatesGrid.appendChild(createBtn);
+    }
 }
 
 function renderBaseTemplates() {
@@ -996,6 +1004,14 @@ btnSaveStartRoom.addEventListener('click', async () => {
 });
 
 async function startRoomWithConfig(config) {
+    if (!auth.currentUser) {
+        try {
+            await signInAnonymously(auth);
+        } catch (e) {
+            console.error("Auto sign-in failed:", e);
+        }
+    }
+
     const imageToSave = config.mapImage;
     const roomConfig = { ...config };
     delete roomConfig.mapImage; // Separiamo l'immagine dal nodo principale
